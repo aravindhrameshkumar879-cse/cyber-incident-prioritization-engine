@@ -51,4 +51,21 @@ class Settings:
     ADMIN_PASSWORD: str = "Admin@1234"
     ADMIN_NAME: str = "Lead SOC Commander"
 
+    # Load local .env if present
+    _backend_env = os.path.join(BACKEND_DIR, ".env")
+    if os.path.exists(_backend_env):
+        try:
+            with open(_backend_env, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        if k.strip() not in os.environ:
+                            os.environ[k.strip()] = v.strip()
+        except Exception:
+            pass
+
+    # Gemini AI Integration
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+
 settings = Settings()

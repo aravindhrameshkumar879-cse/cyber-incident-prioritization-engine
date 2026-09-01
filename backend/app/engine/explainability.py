@@ -1,4 +1,5 @@
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
+from app.core.config import settings
 from app.engine.ml_scorer import ml_scorer
 
 class ExplainabilityEngine:
@@ -84,16 +85,35 @@ class ExplainabilityEngine:
     }
 
     @classmethod
+    def _call_gemini(cls, prompt: str) -> Optional[str]:
+        api_key = getattr(settings, "GEMINI_API_KEY", None)
+        if not api_key:
+            return None
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("gemini-3.6-flash")
+            response = model.generate_content(prompt)
+            if response and response.text:
+                return response.text.strip()
+        except Exception as e:
+            # Fallback smoothly if offline or quota limit
+            pass
+        return None
+
+    @classmethod
     def generate_why_number_one(cls, inc: Any) -> str:
         """
         Synthesizes a compelling, plain-language executive rationale explaining
         why this specific incident claimed the #1 priority spot in the SOC queue.
+        Uses Google Gemini 3.6 Flash when configured, with seamless deterministic fallback.
         """
         def get_val(key, default):
             if isinstance(inc, dict):
                 return inc.get(key, default)
             return getattr(inc, key, default)
 
+        code = get_val("incident_code", "INC-TOP")
         title = get_val("title", "Critical Threat Alert")
         itype = get_val("incident_type", "Ransomware")
         aname = get_val("asset_name", "Primary Infrastructure")
@@ -107,6 +127,20 @@ class ExplainabilityEngine:
         confidence = float(get_val("attack_confidence", 50.0))
         recurrence = int(get_val("recurrence", 0))
 
+        # Try Google Gemini 3.6 Flash first for real-time generative reasoning
+        gemini_prompt = (
+            f"You are the Lead Cybersecurity AI Architect in an enterprise SOC. "
+            f"In 2 to 3 concise, authoritative sentences, explain why the following incident has claimed the #1 Priority spot in the active triage queue: "
+            f"Incident Code: {code}, Threat Vector: {itype}, Asset: {aname} ({atype}), "
+            f"Priority Score: {score:.1f}/100, Technical Severity: {sev:.1f}/100, Business Impact: {biz_imp:.1f}/100, "
+            f"Sensor Confidence: {confidence:.1f}%, Blast Radius: {users} users across {systems} systems. "
+            f"Emphasize why immediate analyst containment is vital."
+        )
+        ai_rationale = cls._call_gemini(gemini_prompt)
+        if ai_rationale:
+            return f"Ranked #1 in SOC Queue (Priority Score: {score:.1f}/100). [AI Threat Synthesis - Gemini]: {ai_rationale}"
+
+        # Deterministic heuristic fallback
         temporal_phrase = "during high-risk off-hours" if time_risk >= 0.6 else "during active operations"
         recurrence_phrase = "with confirmed historical recurrence on this vector" if recurrence == 1 else "as an acute zero-day outbreak"
         
@@ -260,13 +294,24 @@ class ExplainabilityEngine:
 
         drivers_text = ", and ".join(primary_drivers) if primary_drivers else "composite convergence across machine learning risk vectors and deterministic rule thresholds"
 
-        justification = (
-            f"{winner_code} is prioritized over {runner_code} by a delta of +{score_diff:.1f} points "
-            f"(Score: {max(score_a, score_b):.1f} vs {min(score_a, score_b):.1f}). "
-            f"The primary justification for this ranking is {drivers_text}. "
-            f"Both ML regression model (+{abs(ml_delta):.1f} pts) and rule engine logic (+{abs(rule_delta):.1f} pts) "
-            f"confirm {winner_code} presents higher immediate threat to operational integrity."
+        # Try Gemini comparative reasoning
+        gemini_compare_prompt = (
+            f"You are an expert SOC triage analyst. In 2 concise sentences, provide an authoritative comparative justification "
+            f"for why Incident {winner_code} (Score: {max(score_a, score_b):.1f}, Vector: {w_type}, Asset: {w_asset}) "
+            f"is prioritized ahead of Incident {runner_code} (Score: {min(score_a, score_b):.1f}, Vector: {r_type}, Asset: {r_asset}). "
+            f"Primary difference: {drivers_text}."
         )
+        ai_comp = cls._call_gemini(gemini_compare_prompt)
+        if ai_comp:
+            justification = f"[{winner_code} vs {runner_code} (Delta: +{score_diff:.1f} pts)] - {ai_comp}"
+        else:
+            justification = (
+                f"{winner_code} is prioritized over {runner_code} by a delta of +{score_diff:.1f} points "
+                f"(Score: {max(score_a, score_b):.1f} vs {min(score_a, score_b):.1f}). "
+                f"The primary justification for this ranking is {drivers_text}. "
+                f"Both ML regression model (+{abs(ml_delta):.1f} pts) and rule engine logic (+{abs(rule_delta):.1f} pts) "
+                f"confirm {winner_code} presents higher immediate threat to operational integrity."
+            )
 
         return {
             "higher_priority_code": higher_code,
