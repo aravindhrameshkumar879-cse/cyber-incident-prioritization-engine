@@ -10,7 +10,22 @@ import {
   User
 } from '../types';
 
-const API_BASE = '/api';
+const env = (import.meta as any).env || {};
+const rawBase = (env.VITE_API_URL || env.VITE_API_BASE_URL || '').trim();
+export const API_BASE = rawBase 
+  ? (rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/$/, '')}/api`)
+  : '/api';
+
+export function getFullDownloadUrl(urlPath: string): string {
+  if (urlPath.startsWith('http://') || urlPath.startsWith('https://')) {
+    return urlPath;
+  }
+  if (API_BASE.startsWith('http://') || API_BASE.startsWith('https://')) {
+    const origin = new URL(API_BASE).origin;
+    return `${origin}${urlPath.startsWith('/') ? '' : '/'}${urlPath}`;
+  }
+  return urlPath;
+}
 
 function getHeaders(): HeadersInit {
   const token = localStorage.getItem('soc_jwt_token');

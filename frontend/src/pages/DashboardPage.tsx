@@ -19,7 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Incident, IncidentStatus } from '../types';
-import { api } from '../services/api';
+import { api, getFullDownloadUrl } from '../services/api';
 import { PriorityBadge } from '../components/PriorityBadge';
 import { StatusBadge } from '../components/StatusBadge';
 import { ScoreGauge } from '../components/ScoreGauge';
@@ -85,7 +85,7 @@ export const DashboardPage: React.FC = () => {
       const rep = await api.generateReport(incidentId, 'executive');
       setReportNotification(`Report generated! Initiating download...`);
       // Trigger download
-      window.open(rep.download_url, '_blank');
+      window.open(getFullDownloadUrl(rep.download_url), '_blank');
       setTimeout(() => setReportNotification(null), 4000);
     } catch (err: any) {
       alert(`Error generating PDF: ${err.message}`);

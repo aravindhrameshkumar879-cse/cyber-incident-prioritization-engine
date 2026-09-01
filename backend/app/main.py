@@ -21,29 +21,33 @@ from app.api.reports import router as reports_router
 from app.api.model import router as model_router
 from app.api.demo import router as demo_router
 
+def init_db_if_needed():
+    try:
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            admin_user = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
+            if not admin_user:
+                admin_user = User(
+                    email=settings.ADMIN_EMAIL,
+                    full_name=settings.ADMIN_NAME,
+                    hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
+                    role="admin",
+                    is_active=True
+                )
+                db.add(admin_user)
+                db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"[Init DB Error] {e}")
+
+# Run once at module load
+init_db_if_needed()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 1. Ensure DB tables
-    Base.metadata.create_all(bind=engine)
-
-    # 2. Seed Default Admin User if absent
-    db = SessionLocal()
-    try:
-        admin_user = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()
-        if not admin_user:
-            admin_user = User(
-                email=settings.ADMIN_EMAIL,
-                full_name=settings.ADMIN_NAME,
-                hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
-                role="admin",
-                is_active=True
-            )
-            db.add(admin_user)
-            db.commit()
-            print(f"[Startup] Seeded Admin User: {settings.ADMIN_EMAIL}")
-    finally:
-        db.close()
-
+    init_db_if_needed()
     yield
 
 app = FastAPI(

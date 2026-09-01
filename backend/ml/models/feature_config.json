@@ -1,0 +1,79 @@
+{
+  "features": [
+    "severity",
+    "data_sensitivity",
+    "asset_importance",
+    "attack_confidence",
+    "affected_users_normalized",
+    "business_impact",
+    "incident_type_encoded",
+    "asset_type_encoded",
+    "time_risk",
+    "historical_frequency",
+    "recurrence",
+    "affected_system_count_normalized"
+  ],
+  "incident_types": [
+    "Ransomware",
+    "Data Exfiltration",
+    "Unauthorized Access",
+    "DDoS",
+    "Phishing",
+    "Malware",
+    "Insider Threat",
+    "Privilege Escalation"
+  ],
+  "asset_types": [
+    "Domain Controller",
+    "Database Server",
+    "Payment Gateway",
+    "Cloud Storage",
+    "Application Server",
+    "Workstation",
+    "VPN Gateway",
+    "Internal Wiki"
+  ],
+  "target": "priority_target",
+  "feature_importances": {
+    "severity": 0.2401,
+    "data_sensitivity": 0.0812,
+    "asset_importance": 0.1316,
+    "attack_confidence": 0.0391,
+    "affected_users_normalized": 0.0127,
+    "business_impact": 0.2067,
+    "incident_type_encoded": 0.1268,
+    "asset_type_encoded": 0.0734,
+    "time_risk": 0.0247,
+    "historical_frequency": 0.0114,
+    "recurrence": 0.0427,
+    "affected_system_count_normalized": 0.0097
+  },
+  "scaling_mean": [
+    50.17954931818181,
+    49.95601113636364,
+    51.69467840909092,
+    66.61342136363636,
+    48.406142272727266,
+    50.54690613636364,
+    3.241727272727273,
+    3.24925,
+    0.4008720454545455,
+    0.3998700909090909,
+    0.27988636363636366,
+    37.66636409090909
+  ],
+  "scaling_scale": [
+    18.817278709982446,
+    20.466594246708986,
+    19.2251322788034,
+    17.800215195678188,
+    13.18603129416382,
+    13.823495349924036,
+    2.1206612858389713,
+    2.0012693429307675,
+    0.21336087225508918,
+    0.2002399435359101,
+    0.4489431891529004,
+    15.725296864033545
+  ]
+}

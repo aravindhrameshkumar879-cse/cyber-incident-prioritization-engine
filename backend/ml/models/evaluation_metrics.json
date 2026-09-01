@@ -1,0 +1,24 @@
+{
+  "model_name": "HistGradientBoostingRegressor",
+  "dataset_samples": 55000,
+  "train_samples": 44000,
+  "test_samples": 11000,
+  "r2_score": 0.884,
+  "rmse": 3.1685,
+  "mae": 2.508,
+  "feature_importances": {
+    "severity": 0.2401,
+    "data_sensitivity": 0.0812,
+    "asset_importance": 0.1316,
+    "attack_confidence": 0.0391,
+    "affected_users_normalized": 0.0127,
+    "business_impact": 0.2067,
+    "incident_type_encoded": 0.1268,
+    "asset_type_encoded": 0.0734,
+    "time_risk": 0.0247,
+    "historical_frequency": 0.0114,
+    "recurrence": 0.0427,
+    "affected_system_count_normalized": 0.0097
+  },
+  "trained_at": "2026-09-01T21:51:49.362550"
+}

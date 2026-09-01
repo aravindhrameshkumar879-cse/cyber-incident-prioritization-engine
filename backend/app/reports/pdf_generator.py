@@ -46,7 +46,15 @@ class NumberedCanvas(canvas.Canvas):
 
 
 class PDFReportGenerator:
-    STORAGE_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports_storage")
+    _default_storage = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "reports_storage")
+    if os.getenv("VERCEL") == "1" or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None:
+        STORAGE_DIR = "/tmp/reports_storage"
+    else:
+        try:
+            os.makedirs(_default_storage, exist_ok=True)
+            STORAGE_DIR = _default_storage
+        except Exception:
+            STORAGE_DIR = "/tmp/reports_storage"
 
     @classmethod
     def ensure_storage(cls):
