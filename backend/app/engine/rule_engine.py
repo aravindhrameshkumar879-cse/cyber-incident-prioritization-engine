@@ -1,4 +1,3 @@
-import numpy as np
 from typing import Dict, Any, List, Tuple
 
 class RuleEngine:
@@ -132,7 +131,7 @@ class RuleEngine:
                 "description": f"Attack confidence is verified at {attack_conf:.1f}%, ruling out false positive heuristics"
             })
 
-        final_score = float(np.clip(current_score, 0.0, 100.0))
+        final_score = float(max(0.0, min(100.0, current_score)))
         return round(final_score, 2), applied_rules
 
 rule_engine = RuleEngine()
