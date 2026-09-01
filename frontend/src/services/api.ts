@@ -11,7 +11,11 @@ import {
 } from '../types';
 
 const env = (import.meta as any).env || {};
-const rawBase = (env.VITE_API_URL || env.VITE_API_BASE_URL || '').trim();
+const isLocalhost = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// On localhost, always route to local /api proxy. On deployed domains (e.g. Vercel), use VITE_API_URL.
+const rawBase = isLocalhost ? '' : ((env.VITE_API_URL || env.VITE_API_BASE_URL || '').trim());
 export const API_BASE = rawBase 
   ? (rawBase.endsWith('/api') ? rawBase : `${rawBase.replace(/\/$/, '')}/api`)
   : '/api';
